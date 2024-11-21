@@ -1,6 +1,6 @@
 import unittest
 
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 class TestHTMLNode(unittest.TestCase):
     def test_constructor(self):
@@ -47,4 +47,48 @@ class TestLeafNode(unittest.TestCase):
         html = leafnode.to_html()
         self.assertEqual(html, '<a href="google.com">Some text</a>')
 
-        
+    def test_no_tag_to_html(self):
+        leafnode = LeafNode(None, "No tag, just text")
+        self.assertEqual(leafnode.to_html(), 'No tag, just text')
+
+class TestParentNode(unittest.TestCase):
+    def test_leaf_children(self):
+        children = [
+            LeafNode("b", "Bold text"),
+            LeafNode(None, "Normal text"),
+            LeafNode("i", "italic text"),
+            LeafNode(None, "Normal text"),
+        ]
+        parentnode = ParentNode('p', children)
+        self.assertEqual(parentnode.to_html(), '<p><b>Bold text</b>Normal text<i>italic text</i>Normal text</p>')
+
+    def test_mixed_children_and_props(self):
+        children = [
+            ParentNode("div", [LeafNode("i", "italic text"), LeafNode(None, "Normal text")], {"prop": "true"}),
+            LeafNode("b", "Bold text"),
+            LeafNode(None, "Normal text"),
+            
+        ]
+        parentnode = ParentNode('p', children, {"prop": "true"})
+        self.assertEqual(parentnode.to_html(), '<p prop="true"><div prop="true"><i>italic text</i>Normal text</div><b>Bold text</b>Normal text</p>')
+    
+    def test_nested_parent_children(self):
+        children = [
+            ParentNode("div", [
+                ParentNode("p", [LeafNode("b", "Bold text"), LeafNode(None, "Normal text")]),
+                LeafNode("i", "italic text"),
+                LeafNode(None, "Normal text")
+                ]),
+        ]
+        parentnode = ParentNode('p', children)
+        self.assertEqual(parentnode.to_html(), '<p><div><p><b>Bold text</b>Normal text</p><i>italic text</i>Normal text</div></p>')
+
+    def test_no_children(self):
+        parentnode = ParentNode('p', None)
+        with self.assertRaises(ValueError):
+            parentnode.to_html()
+    
+    def test_no_tag(self):
+        parentnode = ParentNode(None, [LeafNode('p', 'leaf')])
+        with self.assertRaises(ValueError):
+            parentnode.to_html()
