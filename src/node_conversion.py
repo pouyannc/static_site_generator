@@ -13,6 +13,9 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
         if len(node_arr) % 2 == 0:
             raise Exception("Invalid markdown syntax")
         for node_text in node_arr:
+            if node_text == "":
+                i += 1
+                continue
             if i % 2 == 0:
                 new_nodes.append(TextNode(node_text, old_type))
             else:

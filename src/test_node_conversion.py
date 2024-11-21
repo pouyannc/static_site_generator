@@ -26,7 +26,6 @@ class TestSplitDelimiter(unittest.TestCase):
                 TextNode("this is ", TextType.TEXT),
                 TextNode("bold", TextType.BOLD),
                 TextNode(" text", TextType.TEXT),
-                TextNode("", TextType.TEXT),
                 TextNode("and even", TextType.BOLD),
                 TextNode(" more ", TextType.TEXT),
                 TextNode("bold", TextType.BOLD),
