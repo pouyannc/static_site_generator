@@ -2,7 +2,7 @@ import unittest
 
 from textnode import TextNode, TextType
 from htmlnode import LeafNode
-from node_conversion import text_node_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links
+from node_conversion import * 
 
 class TestTextToHTML(unittest.TestCase):
     def test_convert_normal_text(self):
@@ -67,6 +67,95 @@ class TestLinksExtraction(unittest.TestCase):
         text = "This text has no links to extract"
         self.assertEqual(extract_markdown_images(text), [])
         self.assertEqual(extract_markdown_links(text), [])
+
+class TestSplitLinks(unittest.TestCase):
+    def test_split_image_link(self):
+        node = TextNode(
+            "This is text with image ![banana](banana.org) and ![pear](pear.com)",
+            TextType.TEXT,
+        )
+        node2 = TextNode(
+            "More text with ![cat](cat.ca) image",
+            TextType.TEXT,
+        )
+        self.assertListEqual(
+            split_nodes_image([node, node2]),
+            [
+                TextNode("This is text with image ", TextType.TEXT),
+                TextNode("banana", TextType.IMAGE, "banana.org"),
+                TextNode(" and ", TextType.TEXT),
+                TextNode(
+                    "pear", TextType.IMAGE, "pear.com"
+                ),
+                TextNode("More text with ", TextType.TEXT),
+                TextNode("cat", TextType.IMAGE, "cat.ca"),
+                TextNode(" image", TextType.TEXT),
+            ]
+        )
+    
+    def test_split_url_link(self):
+        node = TextNode(
+            "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",
+            TextType.TEXT,
+        )
+        node2 = TextNode(
+            "Some more [to github](github.com) links.",
+            TextType.TEXT
+        )
+        self.assertListEqual(
+            split_nodes_link([node, node2]),
+            [
+                TextNode("This is text with a link ", TextType.TEXT),
+                TextNode("to boot dev", TextType.LINK, "https://www.boot.dev"),
+                TextNode(" and ", TextType.TEXT),
+                TextNode(
+                    "to youtube", TextType.LINK, "https://www.youtube.com/@bootdotdev"
+                ),
+                TextNode("Some more ", TextType.TEXT),
+                TextNode("to github", TextType.LINK, "github.com"),
+                TextNode(" links.", TextType.TEXT),
+            ]
+        )
+
+    def test_split_link_no_link(self):
+        node = TextNode(
+            "This is text with without links!",
+            TextType.TEXT,
+        )
+        self.assertListEqual(
+            split_nodes_image([node]),
+            [node]
+        )
+        self.assertListEqual(
+            split_nodes_link([node]),
+            [node]
+        )
+
+    def test_split_links_not_text_type(self):
+        node = TextNode(
+            "This is text a bold text with [link](something.com)...",
+            TextType.BOLD,
+        )
+        self.assertListEqual(
+            split_nodes_link([node]),
+            [node]
+        )
+
+    def test_split_links_empty_start(self):
+        node = TextNode(
+            "[link](something.com)...",
+            TextType.TEXT,
+        )
+        self.assertListEqual(
+            split_nodes_link([node]),
+            [
+                TextNode("link", TextType.LINK, "something.com"),
+                TextNode("...", TextType.TEXT),
+            ]
+        )
+    
+
+
 
 if __name__ == "__main__":
     unittest.main()
