@@ -4,13 +4,15 @@ from block_node_conversion import *
 
 class TestSplitBlock(unittest.TestCase):
     def test_md_to_blocks(self):
-        md = '''# This is a heading
+        md = '''
+# This is a heading
 
-        This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+This is a paragraph of text. It has some **bold** and *italic* words inside of it.
 
-        * This is the first list item in a list block
-        * This is a list item
-        * This is another list item'''
+* This is the first list item in a list block
+* This is a list item
+* This is another list item
+'''
         res = [
             "# This is a heading",
             "This is a paragraph of text. It has some **bold** and *italic* words inside of it.",
@@ -56,3 +58,32 @@ class TestBlockType(unittest.TestCase):
     def test_block_to_type_bad_olist(self):
         block = "1. first\n2. second\n3.wrongly formatted now"
         self.assertEqual(block_to_block_type(block), "paragraph")
+
+class TestMarkdownToHTMLNode(unittest.TestCase):
+    def test_convert_variable_types(self):
+        md = '''
+# This is a heading
+
+This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+
+* First list item
+* Another item
+* Last item
+'''
+        res = ParentNode("div", [
+            ParentNode("h1", [LeafNode(None, "This is a heading")]),
+            ParentNode("p", [
+                LeafNode(None, "This is a paragraph of text. It has some "),
+                LeafNode("b", "bold"),
+                LeafNode(None, " and "),
+                LeafNode("i", "italic"),
+                LeafNode(None, " words inside of it."),
+            ]),
+            ParentNode("ul", [
+                ParentNode("li", [LeafNode(None, "First list item")]),
+                ParentNode("li", [LeafNode(None, "Another item")]),
+                ParentNode("li", [LeafNode(None, "Last item")]),
+            ])
+        ])
+        print(res)
+        self.assertEqual(markdown_to_html_node(md), res)

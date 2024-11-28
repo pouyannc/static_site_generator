@@ -3,6 +3,7 @@ from textnode import TextNode, TextType
 import re
 
 def text_to_textnodes(text):
+    # Take some text and return a list of text nodes by splitting the text into distinct text types
     bold_nodes = split_nodes_delimiter([TextNode(text, TextType.TEXT)], "**", TextType.BOLD)
     italic_nodes = split_nodes_delimiter(bold_nodes, "*", TextType.ITALIC)
     code_nodes = split_nodes_delimiter(italic_nodes, "`", TextType.CODE)
