@@ -1,10 +1,13 @@
 from textnode import TextNode, TextType
 from htmlnode import HTMLNode, LeafNode
+from block_node_conversion import markdown_to_html_node
 import os
 import shutil
+import re
 
 def main():
     build()
+    generate_page("./content/index.md", "./template.html", "./public/index.html")
     return
 
 def build():
@@ -32,6 +35,27 @@ def copy_files_r(source, dest):
             os.mkdir(dest_path)
             copy_files_r(source_path, dest_path)
     return
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}.")
+    with open(from_path) as md_file:
+        md = md_file.read()
+    html_node = markdown_to_html_node(md)
+    html = html_node.to_html()
+    with open(template_path) as template_file:
+        template = template_file.read()
+    title = extract_title(md)
+    index_html = template.replace("{{ Content }}", html)
+    index_html = index_html.replace("{{ Title }}", title)
+    with open(dest_path, "w") as dest_file:
+        dest_file.write(index_html)
+
+def extract_title(md):
+    matches = re.findall(r"^#\s.*", md)
+    if not matches:
+        raise Exception("Markdown must have a title (h1) heading to extract document title")
+    return matches[0].lstrip("# ")
+
 
 if __name__ == "__main__":
     main()

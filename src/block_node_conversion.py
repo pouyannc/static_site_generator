@@ -9,8 +9,6 @@ def markdown_to_html_node(markdown):
         parent_node = None
         block_type = block_to_block_type(block)
         modded_block, tag = strip_md_and_get_tag(block, block_type)
-        print(modded_block)
-        print(tag)
         if tag == "ul" or tag == "ol":
             list_nodes = []
             for line in modded_block.split("\n"):
@@ -26,7 +24,6 @@ def markdown_to_html_node(markdown):
             if tag == "code":
                 parent_node = ParentNode("pre", [parent_node])
         block_nodes.append(parent_node)
-    print(ParentNode("div", block_nodes))
     return ParentNode("div", block_nodes)
 
 def strip_md_and_get_tag(text, type):
@@ -45,10 +42,10 @@ def strip_md_and_get_tag(text, type):
             return (text.split(' ', 1)[1], f"{HTML_tag[type]}{heading_number}")
         case "code":
             return (text.strip('`'), HTML_tag[type])
-        case "quote":
-            return ("\n".join(map(lambda x: x[1:], text.split("\n"))), HTML_tag[type])
-        case "unordered_list" | "ordered_list":
+        case "unordered_list" | "quote":
             return ("\n".join(map(lambda x: x[2:], text.split("\n"))), HTML_tag[type])
+        case "ordered_list":
+            return ("\n".join(map(lambda x: x[3:], text.split("\n"))), HTML_tag[type])
         case _:
             return (text, HTML_tag[type])
 
