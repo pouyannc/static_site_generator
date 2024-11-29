@@ -41,7 +41,7 @@ def strip_md_and_get_tag(text, type):
             heading_number = len(text.split(' ', 1)[0])
             return (text.split(' ', 1)[1], f"{HTML_tag[type]}{heading_number}")
         case "code":
-            return (text.strip('`'), HTML_tag[type])
+            return (text.strip('`\n'), HTML_tag[type])
         case "unordered_list" | "quote":
             return ("\n".join(map(lambda x: x[2:], text.split("\n"))), HTML_tag[type])
         case "ordered_list":

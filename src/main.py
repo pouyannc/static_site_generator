@@ -7,7 +7,7 @@ import re
 
 def main():
     build()
-    generate_page("./content/index.md", "./template.html", "./public/index.html")
+    generate_page_recursive("./content", "./template.html", "./public")
     return
 
 def build():
@@ -36,19 +36,30 @@ def copy_files_r(source, dest):
             copy_files_r(source_path, dest_path)
     return
 
-def generate_page(from_path, template_path, dest_path):
-    print(f"Generating page from {from_path} to {dest_path} using {template_path}.")
-    with open(from_path) as md_file:
-        md = md_file.read()
-    html_node = markdown_to_html_node(md)
-    html = html_node.to_html()
-    with open(template_path) as template_file:
-        template = template_file.read()
-    title = extract_title(md)
-    index_html = template.replace("{{ Content }}", html)
-    index_html = index_html.replace("{{ Title }}", title)
-    with open(dest_path, "w") as dest_file:
-        dest_file.write(index_html)
+def generate_page_recursive(dir_path_content, template_path, dest_dir_path):
+    if os.path.isfile(dir_path_content): raise Exception("Content path must be a directory, not a file")
+    filenames = os.listdir(dir_path_content)
+    for filename in filenames:
+        from_path = os.path.join(dir_path_content, filename)
+        if os.path.isfile(from_path):
+            dest_path = os.path.join(dest_dir_path, "index.html")
+            print(f"Generating page from {from_path} to {dest_path} using {template_path}.")
+            with open(from_path) as md_file:
+                md = md_file.read()
+            html_node = markdown_to_html_node(md)
+            html = html_node.to_html()
+            with open(template_path) as template_file:
+                template = template_file.read()
+            title = extract_title(md)
+            index_html = template.replace("{{ Content }}", html)
+            index_html = index_html.replace("{{ Title }}", title)
+            with open(dest_path, "w") as dest_file:
+                dest_file.write(index_html)
+        else:
+            dest_path = os.path.join(dest_dir_path, filename)
+            os.mkdir(dest_path)
+            generate_page_recursive(from_path, template_path, dest_path)
+    return
 
 def extract_title(md):
     matches = re.findall(r"^#\s.*", md)
